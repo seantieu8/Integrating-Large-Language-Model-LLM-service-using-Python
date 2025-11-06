@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Auto Reply Email</title>
+    <style>
+    .visible {
+                display: block !important; /* Use !important to ensure it overrides the default display: none */
+            }
+    </style>
+</head>
+<br>
+    <h1 style="font-family: Arial, Helvetica, sans-serif;">Welcome to the Auto Reply Email Page</h1>
+    <div class="input-container">
+        <!--Input Section -->
+        <h4 style="font-family: Arial, Helvetica, sans-serif;">Enter your email content:
+            <br>
+            <textarea id="userInputField" style="width: 1000px; height: 200px; font-family: Arial, Helvetica, sans-serif;" placeholder="Enter your email content here..."></textarea>
+            <br></br></h4>
+        <!-- Button to trigger the API request -->
+        <button onclick="sendAutoReply()">Send Auto Reply Request</button>
+        <br></br>
+    </div>
+
+
+    <!--Output Section -->
+    <div class="output-container" hidden id="output-container">
+        <h2 style="color:midnightblue; font-family: Arial, Helvetica, sans-serif;">Auto Reply:<h2>
+        <h4>
+            <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Sender: </strong><span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="sender"></span><br>
+            <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Receiver: </strong><span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="receiver"></span><br>
+            <h3>
+                <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Message: </strong><span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="message"></span><br>
+            </h3>
+            <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Status: </strong><span style="font-weight:bold; color:green; font-family: Arial, Helvetica, sans-serif;" id="status"></span><br>
+        </h4>
+    </div>
+
+    <script>
+        // Function to send a POST request to the API when the button is clicked​
+        function sendAutoReply() {
+            // getting the message
+            const userInput = document.getElementById('userInputField').value;
+            // Prepare the data to send (the paragraph to the API)​
+            const data = {'paragraph': userInput}
+            // Use Fetch API to send the POST request​
+            fetch('/api/auto_reply_email/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json()) // Get the response as text​
+            .then(data => {
+                // Display the response under the button
+                document.getElementById('output-container').classList.add('visible')
+                document.getElementById('output-container').classList.remove('hidden')
+                document.getElementById('sender').innerHTML = data.sender_name;
+                document.getElementById('receiver').innerHTML = data.receiver_name;
+                document.getElementById('message').innerHTML = data.reply;
+                document.getElementById('status').innerHTML = data.status;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

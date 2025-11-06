@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Auto Reply Email</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .input-section, .output-section, .inquiry-history-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't affect total width */
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 150px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output-details {
+            margin-top: 15px;
+        }
+        .output-details strong {
+            color: midnightblue;
+        }
+        .output-details span {
+            font-weight: normal;
+        }
+        .status-success {
+            font-weight: bold;
+            color: green;
+        }
+        .status-failure {
+            font-weight: bold;
+            color: red;
+        }
+        .inquiry-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .inquiry-item {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .inquiry-item .question-text,
+        .inquiry-item .answer-text {
+            margin-bottom: 5px;
+        }
+        .inquiry-item strong {
+            color: #333;
+        }
+        /* Increased padding for input fields to make them slightly larger */
+        .input-section input[type="email"],
+        .input-section textarea {
+            padding: 12px; /* Increased padding from 10px */
+        }
+        /* Slightly increased min-height for textarea for better perceived size */
+        .input-section textarea {
+            min-height: 160px; /* Increased from 150px */
+        }
+        /* Applying consistent styling to input fields */
+        .input-section input[type="email"],
+        .input-section textarea {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Auto Reply Email Page</h1>
+
+        <div class="input-section">
+            <h4>Enter your email address:</h4>
+            <input type="email" id="email-address" placeholder="Enter your email address here...">
+            <h4>Enter your email content:</h4>
+            <textarea id="userInputField" placeholder="Enter your email content here..."></textarea>
+            <br></br>
+            <button onclick="sendAutoReply()">Send Auto Reply Request</button>
+        </div>
+
+        <div class="output-section" id="output-container" hidden>
+            <h2>Auto Reply:</h2>
+            <div class="output-details">
+                <p>
+                    <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Sender: </strong>
+                    <span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="sender"></span>
+                </p>
+                <p>
+                    <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Receiver: </strong>
+                    <span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="receiver"></span>
+                </p>
+                <p>
+                    <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Extracted Questions: </strong>
+                    <span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="extracted-message"></span>
+                </p>
+                <p>
+                    <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Reply Message: </strong>
+                    <span style="font-weight:normal; font-family: Arial, Helvetica, sans-serif;" id="message"></span>
+                </p>
+                <p>
+                    <strong style="color: midnightblue; font-family: Arial, Helvetica, sans-serif;">Status: </strong>
+                    <span style="font-weight:bold; color:green; font-family: Arial, Helvetica, sans-serif;" id="status"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="inquiry-history-section">
+            <h3>All Inquiry Questions History</h3>
+            <ol class="inquiry-list">
+                {% for inquiry in inquiry_questions %}
+                        <li class="inquiry-item">
+                            <div class="question-text">
+                            <strong>Q{{ forloop.counter }}:</strong> {{ inquiry.question }}
+                        </div>
+                        <div class="answer-text">
+                            <strong>Answer:</strong> {{ inquiry.answer|default:"[No answer yet]" }}
+                        </div>
+                    </li>
+                {% empty %}
+                    <li class="inquiry-item">No inquiry questions available</li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function sendAutoReply() {
+            const userInput = document.getElementById('userInputField').value;
+            const emailInput = document.getElementById('email-address').value
+
+            const data = {'paragraph': userInput, 'email' : emailInput}
+
+            fetch('/api/auto_reply_email/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output-container').hidden = false; // Make it visible
+                document.getElementById('sender').innerHTML = data.sender_name || 'N/A';
+                document.getElementById('receiver').innerHTML = data.receiver_name || 'N/A';
+                // Assuming llm_util.extract_sender_and_receiver_names returns sender, receiver, question
+                // and the question is what we want for 'extracted-message'
+                document.getElementById('extracted-message').innerHTML = data.inquiry_question || 'N/A';
+                document.getElementById('message').innerHTML = data.reply;
+
+                const statusSpan = document.getElementById('status');
+                statusSpan.innerHTML = data.status;
+                statusSpan.className = data.status === 'success' ? 'status-success' : 'status-failure';
+
+                // Re-render the inquiry history if needed, or assume it's updated by the server on subsequent loads.
+                // For this example, we assume the history is loaded fresh when the page loads.
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('output-container').hidden = false;
+                document.getElementById('sender').innerHTML = 'Error';
+                document.getElementById('receiver').innerHTML = 'Error';
+                document.getElementById('extracted-message').innerHTML = 'Error';
+                document.getElementById('message').innerHTML = 'An error occurred while processing your request.';
+                const statusSpan = document.getElementById('status');
+                statusSpan.innerHTML = 'failure';
+                statusSpan.className = 'status-failure';
+            });
+        }
+    </script>
+</body>
+</html>
